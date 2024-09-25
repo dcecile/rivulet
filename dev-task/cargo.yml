@@ -1,0 +1,275 @@
+version: '3'
+
+run: when_changed
+
+vars:
+  RUST_VERSION: nightly-2024-09-25
+
+  # Note: some options still needed as args (https://github.com/rust-lang/rust-clippy/issues/7290)
+  CLIPPY_ARGS: >-
+    --
+    -A clippy::single_component_path_imports
+    -D warnings
+
+tasks:
+  bin:install:
+    cmds:
+      # To avoid painful conflicts, don't use lockfile
+      - cargo install cargo-deny --version 0.14.3
+
+  build:debug:
+    aliases:
+      - build
+      - b
+    cmd:
+      task: execute-build
+      vars:
+        WATCH: false
+        MODE: debug
+        CLIPPY: false
+
+  build:clippy:debug:watch:
+    aliases:
+      - build:clippy:watch
+      - bcw
+    cmd:
+      task: execute-build
+      vars:
+        WATCH: true
+        MODE: debug
+        CLIPPY: true
+
+  build:release:
+    aliases:
+      - br
+    cmd:
+      task: execute-build
+      vars:
+        WATCH: false
+        MODE: release
+        CLIPPY: false
+
+  clean:
+    cmd: cargo clean
+
+  clippy:lint:check:
+    deps:
+      - build:release
+    cmd: cargo clippy --all-targets --offline --locked --release {{.CLIPPY_ARGS}}
+
+  clippy:lint:fix:
+    deps:
+      - build:release
+    cmd: cargo clippy --all-targets --offline --locked --release --fix --allow-dirty --allow-staged {{.CLIPPY_ARGS}}
+
+  deny:lint:
+    cmd: cargo deny check
+
+  execute-build:
+    internal: true
+    requires:
+      vars:
+        - WATCH
+        - MODE
+        - CLIPPY
+    deps:
+      - execute-build:prep
+    cmd:
+      task: :watchman:client
+      vars:
+        WATCH: '{{.WATCH}}'
+        RESTART: false
+        MODE: rust
+        COMMAND: build/target/{{.TASK_CARGO_BUILD_MODE}}/rivulet-dev-cargo-build --mode {{.MODE}} {{if eq (toString .CLIPPY) "true"}}--clippy="{{.CLIPPY_ARGS}}"{{end}}
+
+  execute-build:prep:
+    internal: true
+    cmd: cargo build --locked {{if eq .TASK_CARGO_BUILD_MODE "release"}}--release{{end}} --package rivulet-dev-cargo-build
+
+  execute-package:
+    internal: true
+    requires:
+      vars:
+        - WATCH
+        - RESTART
+        - MODE
+        - TEST
+        - NAME
+        - ARGS
+    cmds:
+      # HACK: Reference all variables here, so Task doesn't think they're unused
+      - cmd: 'true # /{{.WATCH}}/{{.RESTART}}/{{.MODE}}/{{.TEST}}/{{.NAME}}/{{.ARGS}}/'
+        silent: true
+      - task: :watchman:client
+        vars:
+          WATCH: '{{.WATCH}}'
+          RESTART: '{{.RESTART}}'
+          MODE: executable
+          COMMAND: build/target/{{.MODE}}/rivulet-{{.NAME | trimSuffix "-rs"}}{{if eq (toString .TEST) "true"}}-test{{end}} {{.ARGS}} {{.CLI_ARGS}}
+
+  execute-package:run:debug:
+    internal: true
+    requires:
+      vars:
+        - NAME
+    deps:
+      - build:debug
+    cmds:
+      # HACK: Reference all variables here, so Task doesn't think they're unused
+      - cmd: 'true # /{{.NAME}}/{{.ARGS}}/'
+        silent: true
+      - task: execute-package
+        vars:
+          WATCH: false
+          RESTART: true
+          MODE: debug
+          TEST: false
+          NAME: '{{.NAME}}'
+          ARGS: '{{.ARGS}}'
+
+  execute-package:run:debug:watch:
+    internal: true
+    requires:
+      vars:
+        - NAME
+    deps:
+      - build:debug
+    cmds:
+      # HACK: Reference all variables here, so Task doesn't think they're unused
+      - cmd: 'true # /{{.NAME}}/{{.ARGS}}/'
+        silent: true
+      - task: execute-package
+        vars:
+          WATCH: true
+          RESTART: true
+          MODE: debug
+          TEST: false
+          NAME: '{{.NAME}}'
+          ARGS: '{{.ARGS}}'
+
+  execute-package:run:release:
+    internal: true
+    requires:
+      vars:
+        - NAME
+    deps:
+      - build:release
+    cmds:
+      # HACK: Reference all variables here, so Task doesn't think they're unused
+      - cmd: 'true # /{{.NAME}}/{{.ARGS}}/'
+        silent: true
+      - task: execute-package
+        vars:
+          WATCH: false
+          RESTART: false
+          MODE: release
+          TEST: false
+          NAME: '{{.NAME}}'
+          ARGS: '{{.ARGS}}'
+
+  execute-package:test:debug:
+    internal: true
+    requires:
+      vars:
+        - NAME
+    deps:
+      - build:debug
+    cmds:
+      # HACK: Reference all variables here, so Task doesn't think they're unused
+      - cmd: 'true # /{{.NAME}}/{{.ARGS}}/'
+        silent: true
+      - task: execute-package
+        vars:
+          WATCH: false
+          RESTART: false
+          MODE: debug
+          TEST: true
+          NAME: '{{.NAME}}'
+          ARGS: '{{.ARGS}}'
+
+  execute-package:test:debug:watch:
+    internal: true
+    requires:
+      vars:
+        - NAME
+    deps:
+      - build:debug
+    cmds:
+      # HACK: Reference all variables here, so Task doesn't think they're unused
+      - cmd: 'true # /{{.NAME}}/{{.ARGS}}/'
+        silent: true
+      - task: execute-package
+        vars:
+          WATCH: true
+          RESTART: false
+          MODE: debug
+          TEST: true
+          NAME: '{{.NAME}}'
+          ARGS: '{{.ARGS}}'
+
+  execute-package:test:release:
+    internal: true
+    requires:
+      vars:
+        - NAME
+    deps:
+      - build:release
+    cmds:
+      # HACK: Reference all variables here, so Task doesn't think they're unused
+      - cmd: 'true # /{{.NAME}}/{{.ARGS}}/'
+        silent: true
+      - task: execute-package
+        vars:
+          WATCH: false
+          RESTART: false
+          MODE: release
+          TEST: true
+          NAME: '{{.NAME}}'
+          ARGS: '{{.ARGS}}'
+
+  fetch:
+    cmd: cargo fetch --locked
+
+  format:check:
+    aliases:
+      - fc
+    cmd: cargo fmt --all -- --check
+
+  format:fix:
+    aliases:
+      - format
+      - f
+    cmd: cargo fmt --all
+
+  install:
+    deps:
+      - task: toolchain:install
+    cmds:
+      - task: fetch
+      - task: bin:install
+
+  lint:check:
+    aliases:
+      - lint
+      - l
+    deps:
+      - clippy:lint:check
+      - deny:lint
+
+  lint:fix:
+    aliases:
+      - lf
+    deps:
+      - clippy:lint:fix
+      - deny:lint
+
+  lock:
+    cmd: cargo metadata --format-version=1 >/dev/null
+
+  lock:check:
+    cmd: cargo metadata --locked --format-version=1 >/dev/null
+
+  toolchain:install:
+    cmds:
+      - if [ ! -f {{.CARGO_HOME}}/bin/rustup ] ; then curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --no-modify-path --default-toolchain none --quiet -y; fi
+      - rustup toolchain install {{.RUST_VERSION}}

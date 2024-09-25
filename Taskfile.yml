@@ -1,0 +1,134 @@
+version: "3"
+
+run: when_changed
+
+includes:
+  cargo:
+    taskfile: dev-task/cargo.yml
+
+  dev-cargo-build:
+    taskfile: dev-cargo-build
+
+  dev-nix-shell:
+    internal: true
+    taskfile: dev-nix-shell
+
+  dev-watchman-client:
+    taskfile: dev-watchman-client
+
+  exe-tech:
+    taskfile: exe-tech
+
+  lib-hex-rs:
+    taskfile: lib-hex-rs
+
+  nix:
+    taskfile: dev-task/nix.yml
+
+  overmind:
+    taskfile: dev-task/overmind.yml
+
+  tmpfs:
+    taskfile: dev-task/tmpfs.yml
+
+  watchman:
+    taskfile: dev-task/watchman.yml
+
+tasks:
+  build:debug:
+    aliases:
+      - build
+      - b
+    deps:
+      - cargo:build:debug
+
+  build:release:
+    aliases:
+      - br
+    deps:
+      - cargo:build:release
+
+  cargo:test:debug:
+    aliases:
+      - cargo:test
+      - cargo:t
+    deps:
+      - dev-cargo-build:test:debug
+      - dev-watchman-client:test:debug
+      - lib-hex-rs:test:debug
+      - exe-tech:test:debug
+
+  cargo:test:release:
+    aliases:
+      - cargo:tr
+    deps:
+      - dev-cargo-build:test:release
+      - dev-watchman-client:test:release
+      - lib-hex-rs:test:release
+      - exe-tech:test:release
+
+  check:
+    aliases:
+      - c
+    deps:
+      - build:release
+      - test:release
+      - format:check
+      - lint:check
+      - lock:check
+    cmds:
+      - echo "✅"
+
+  clean:
+    deps:
+      - cargo:clean
+
+  dev:
+    aliases:
+      - d
+    deps:
+      - watchman:client:prep
+    cmd:
+      task: overmind:start
+
+  format:check:
+    aliases:
+      - fc
+    deps:
+      - cargo:format:check
+
+  format:fix:
+    aliases:
+      - format
+      - f
+    deps:
+      - cargo:format:fix
+
+  install:
+    aliases:
+      - i
+    deps:
+      - cargo:install
+
+  lint:check:
+    aliases:
+      - lint
+      - l
+    deps:
+      - cargo:lint:check
+
+  lint:fix:
+    aliases:
+      - lf
+    deps:
+      - cargo:lint:fix
+
+  lock:check:
+    deps:
+      - cargo:lock:check
+
+  test:release:
+    aliases:
+      - tr
+    deps:
+      - cargo:test:release

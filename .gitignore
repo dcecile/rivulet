@@ -1,0 +1,7 @@
+.cargo
+.direnv
+.env
+.rustup
+build
+result
+tmp

@@ -1,0 +1,54 @@
+version: '3'
+
+run: when_changed
+
+vars:
+  NAME: exe-tech
+
+tasks:
+  run:debug:
+    aliases:
+      - run
+      - r
+    cmd:
+      task: :cargo:execute-package:run:debug
+      vars:
+        NAME: '{{.NAME}}'
+  run:debug:watch:
+    aliases:
+      - run:watch
+      - rw
+    cmd:
+      task: :cargo:execute-package:run:debug:watch
+      vars:
+        NAME: '{{.NAME}}'
+  run:release:
+    aliases:
+      - rr
+    cmd:
+      task: :cargo:execute-package:run:release
+      vars:
+        NAME: '{{.NAME}}'
+  test:debug:
+    aliases:
+      - test
+      - t
+    cmd:
+      task: :cargo:execute-package:test:debug
+      vars:
+        NAME: '{{.NAME}}'
+  test:debug:watch:
+    aliases:
+      - test:watch
+      - tw
+    cmd:
+      task: :cargo:execute-package:test:debug:watch
+      vars:
+        NAME: '{{.NAME}}'
+  test:release:
+    aliases:
+      - tr
+    cmd:
+      task: :cargo:execute-package:test:release
+      vars:
+        NAME: '{{.NAME}}'

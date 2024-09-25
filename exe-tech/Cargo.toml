@@ -1,0 +1,20 @@
+[package]
+name = "rivulet-exe-tech"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "rivulet-exe-tech"
+path = "src/mod.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+env_logger = { workspace = true }
+log = { workspace = true }
+tokio = { workspace = true }
+wgpu = { workspace = true }
+winit = { workspace = true }
+
+[lints]
+workspace = true

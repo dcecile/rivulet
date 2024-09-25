@@ -1,0 +1,86 @@
+[workspace]
+members = [
+  "dev-cargo-build",
+  "dev-watchman-client",
+  "exe-tech",
+  "lib-hex-rs",
+]
+resolver = "2"
+
+[workspace.dependencies]
+anyhow = { version = "1.0.75", features = ["std"] }
+backon = { version = "0.4.1", features = [] }
+clap = { version = "4.4.12", features = ["color", "derive", "error-context", "help", "std", "suggestions", "usage"] }
+env_logger = { version = "0.11.5", features = [] }
+log = { version = "0.4.22", features = [] }
+mockall = { version = "0.12.1", features = [] }
+nix = { version = "0.27.1", features = ["signal"] }
+serde = { version = "1.0.194", features = ["derive", "std"] }
+serde_json = { version = "1.0.110", features = [] }
+tokio = { version = "1.39.2", features = ["fs", "io-util", "macros", "net", "process", "rt-multi-thread", "sync"] }
+watchman_client = { version = "0.8.0", features = [] }
+wgpu = { version = "22.1.0", features = ["wgsl"] }
+winit = { version = "0.29.15", features = [] }
+
+[workspace.lints.rust]
+# Groups
+future-incompatible = "warn"
+let-underscore = "warn"
+nonstandard-style = "warn"
+refining-impl-trait = "warn"
+unused = "warn"
+
+# Allowed by default
+absolute-paths-not-starting-with-crate = "warn"
+dead-code = "warn"
+deprecated-in-future = "warn"
+elided-lifetimes-in-paths = "warn"
+explicit-outlives-requirements = "warn"
+ffi-unwind-calls = "warn"
+keyword-idents = "warn"
+macro-use-extern-crate = "warn"
+meta-variable-misuse = "warn"
+missing-abi = "warn"
+missing-copy-implementations = "warn"
+missing-debug-implementations = "warn"
+missing-docs = "allow"
+single-use-lifetimes = "warn"
+trivial-casts = "warn"
+trivial-numeric-casts = "warn"
+unit-bindings = "warn"
+unreachable-pub = "warn"
+unsafe-op-in-unsafe-fn = "warn"
+unsafe_code = "warn"
+unused-crate-dependencies = "warn"
+unused-extern-crates = "warn"
+unused-import-braces = "warn"
+unused-lifetimes = "warn"
+unused-macro-rules = "warn"
+unused-qualifications = "warn"
+variant-size-differences = "warn"
+
+[workspace.lints.clippy]
+cargo = "warn"
+
+# Pedantic
+pedantic = "warn"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+module_name_repetitions = "allow"
+
+# Style
+style = "warn"
+single_component_path_imports = "allow"
+
+# Restrictions
+absolute_paths = "warn"
+dbg_macro = "warn"
+exit = "warn"
+panic_in_result_fn = "warn"
+partial_pub_fields = "warn"
+print_stderr = "warn"
+print_stdout = "warn"
+pub_without_shorthand = "warn"
+self_named_module_files = "warn"
+try_err = "warn"
+unwrap_in_result = "warn"

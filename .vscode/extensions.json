@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "matklad.rust-analyzer",
+    "mikestead.dotenv",
+    "mkhl.direnv",
+    "redhat.vscode-yaml",
+    "tamasfe.even-better-toml",
+    "task.vscode-task"
+  ],
+  "unwantedRecommendations": []
+}
